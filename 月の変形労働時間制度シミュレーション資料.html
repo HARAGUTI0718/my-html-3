@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light" style=""><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月の変形労働時間シミュレーション説明資料</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet">
+    <style>
+      body {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 32px 80px;
+        position: relative;
+        box-sizing: border-box;
+        font-family: 'Noto Sans JP', 'Times New Roman', serif;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        font-size: 24px;
+      }
+
+      h2 {
+        color: #2c3e50;
+        background-color: #ecf0f1;
+        padding: 12px 15px;
+        margin-top: 30px;
+        border-left: 5px solid #3498db;
+        font-size: 20px;
+      }
+
+      h3 {
+        color: #34495e;
+        border-bottom: 2px solid #bdc3c7;
+        padding-bottom: 5px;
+        font-size: 18px;
+      }
+
+      h4 {
+        color: #2c3e50;
+        font-size: 16px;
+        margin-top: 25px;
+        margin-bottom: 15px;
+      }
+
+      .highlight-box {
+        background-color: #f8f9fa;
+        border: 2px solid #3498db;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 5px;
+      }
+
+      .rule-box {
+        background-color: #fff3cd;
+        border: 2px solid #ffc107;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+      }
+
+      .work-day {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 3px;
+      }
+
+      .holiday {
+        background-color: #ffebee;
+        color: #d32f2f;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 3px;
+      }
+
+      .pattern-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      .pattern-table th,
+      .pattern-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .pattern-table th {
+        background-color: #3498db;
+        color: white;
+        font-weight: bold;
+      }
+
+      .pattern-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 16px;
+      }
+
+      .summary-table th,
+      .summary-table td {
+        border: 2px solid #34495e;
+        padding: 15px;
+        text-align: center;
+      }
+
+      .summary-table th {
+        background-color: #34495e;
+        color: white;
+        font-weight: bold;
+      }
+
+      .min-pattern {
+        background-color: #ffcdd2;
+      }
+
+      .max-pattern {
+        background-color: #c8e6c9;
+      }
+
+      .mix-pattern {
+        background-color: #ffe0b2;
+      }
+
+      ul {
+        padding-left: 25px;
+      }
+
+      li {
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .calculation {
+        background-color: #f0f8ff;
+        border-left: 4px solid #1976d2;
+        padding: 15px;
+        margin: 15px 0;
+        font-family: monospace;
+        font-size: 14px;
+      }
+
+      .pattern-flex {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        margin-bottom: 30px;
+      }
+
+      .pattern-content {
+        flex: 1;
+      }
+
+      .calendar-container {
+        width: 350px;
+        background-color: #f8f9fa;
+        border: 2px solid #3498db;
+        padding: 15px;
+        border-radius: 5px;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        margin-bottom: 10px;
+      }
+
+      .calendar-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 4px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 10px;
+      }
+
+      .calendar-day {
+        padding: 4px;
+        text-align: center;
+        font-size: 9px;
+        min-height: 35px;
+        border: 1px solid;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .calendar-work {
+        background-color: #e3f2fd;
+        border-color: #1976d2;
+        color: #1976d2;
+      }
+
+      .calendar-holiday {
+        background-color: #ffebee;
+        border-color: #d32f2f;
+        color: #d32f2f;
+      }
+
+      .calendar-empty {
+        background-color: #f5f5f5;
+        border-color: #ccc;
+      }
+
+      .calendar-summary {
+        font-size: 10px;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      span {
+        font-size: 16px;
+      }
+
+      strong {
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body style="">
+    <h1>月の変形労働時間シミュレーション説明資料</h1>
+
+    <h2>🏢 制度概要</h2>
+
+    <h3>1ヶ月単位の変形労働時間制とは</h3>
+    <div class="highlight-box">
+      <p>
+        1ヶ月単位の変形労働時間制は、労働基準法第32条の2に基づく制度で、1ヶ月以内の期間を平均して週40時間以内の範囲で、特定の日・週に法定労働時間を超えて労働させることができる制度です。
+      </p>
+      <ul>
+        <li>月の暦日数に応じた法定労働時間の上限内で運用</li>
+        <li>業務の繁閑に応じた柔軟な労働時間設定が可能</li>
+        <li>週平均40時間以内の遵守が必要</li>
+      </ul>
+    </div>
+
+    <h3>新ルール：「最低週1日の公休（6連勤まで）」</h3>
+    <div class="rule-box">
+      <p>
+        <strong>変更点:</strong> 従来の「各月の休日の合計が8日以上」から、労働基準法の週休制の原則に則った制約に変更
+      </p>
+      <ul>
+        <li>毎週1回以上の休日を確保</li>
+        <li>連続勤務日数は最大6日まで</li>
+        <li>法定休日は日曜日</li>
+      </ul>
+    </div>
+
+    <h3>前提条件</h3>
+    <table class="pattern-table">
+      <tbody><tr>
+        <th>項目</th>
+        <th>条件</th>
+      </tr>
+      <tr>
+        <td>1日の勤務時間</td>
+        <td>6時間以上10時間以内</td>
+      </tr>
+      <tr>
+        <td>30日の月の所定労働時間</td>
+        <td>171時間（法定上限171.4時間以内）</td>
+      </tr>
+      <tr>
+        <td>31日の月の所定労働時間</td>
+        <td>177時間（法定上限177.1時間以内）</td>
+      </tr>
+      <tr>
+        <td>月平均週労働時間</td>
+        <td>約39.9時間（週40時間以内）</td>
+      </tr>
+    </tbody></table>
+
+    <h2>📊 シミュレーション結果</h2>
+
+    <h3>30日の月（所定労働時間：171時間）</h3>
+
+    <h4>🔵 パターン1：公休日数を最小にするケース</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box min-pattern pattern-content">
+        <p><strong>目的:</strong> 労働日数を最大化し、公休日数を最小限に抑える</p>
+        <div class="calculation">
+          労働日数 = 30日 - 4日 = 26日<br>
+          1日平均勤務時間 = 171時間 ÷ 26日 = 約6.58時間
+        </div>
+        <p><strong>勤務パターン例:</strong> 6日勤務＋1日公休を4回繰り返し、残り2日は勤務日</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数26日</span> / <span class="holiday">公休日数4日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（30日・最小公休）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：26日 / 公休日数：4日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">2</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">4</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">5</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">6</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">9</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">10</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">11</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">12</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">13</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">14</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">17</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">19</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">20</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">26</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">27</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">29</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">30</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：171時間（6.5h×24日 + 7h×2日）<br>
+          6連勤×4回 + 残り2日勤務
+        </div>
+      </div>
+    </div>
+
+    <h4>🟢 パターン2：公休日数を最大にするケース</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box max-pattern pattern-content">
+        <p><strong>目的:</strong> 1日10時間勤務を最大限活用し、労働日数を最小化</p>
+        <div class="calculation">
+          必要労働日数 = 171時間 ÷ 10時間/日 = 17.1日 → 18日（切り上げ）<br>
+          公休日数 = 30日 - 18日 = 12日
+        </div>
+        <p><strong>勤務設定例:</strong> 10時間勤務15日 + 7時間勤務3日 = 171時間</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数18日</span> / <span class="holiday">公休日数12日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（30日・最大公休）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：18日 / 公休日数：12日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">2</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">4</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">5</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">6</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>10h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">9</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">10</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">11</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">12</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">13</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">14</div>
+            <div>公休</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">17</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">19</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">20</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>10h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">26</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">27</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>7h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">29</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">30</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：171時間（10h×15日 + 7h×3日）<br>
+          集中勤務で公休日数を最大化
+        </div>
+      </div>
+    </div>
+
+    <h4>🟡 パターン3：ミックスパターン</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box mix-pattern pattern-content">
+        <p><strong>目的:</strong> 様々な勤務時間を組み合わせた現実的な運用</p>
+        <div class="calculation">労働日数20日での1日平均 = 171時間 ÷ 20日 = 8.55時間</div>
+        <p><strong>勤務設定例:</strong> 10時間勤務5日 + 9時間勤務5日 + 8時間勤務6日 + 7時間勤務4日 = 171時間</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数20日</span> / <span class="holiday">公休日数10日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（30日・ミックス）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：20日 / 公休日数：10日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">2</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">4</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">5</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">6</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>9h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">9</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">10</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">11</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">12</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">13</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">14</div>
+            <div>8h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">17</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">19</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">20</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>8h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">26</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">27</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>9h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">29</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">30</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：171時間（10h×5日 + 9h×5日 + 8h×6日 + 7h×4日）<br>
+          現実的な運用パターン
+        </div>
+      </div>
+    </div>
+
+    <h3>31日の月（所定労働時間：177時間）</h3>
+
+    <h4>🔵 パターン1：公休日数を最小にするケース</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box min-pattern pattern-content">
+        <p><strong>目的:</strong> 労働日数を最大化し、公休日数を最小限に抑える</p>
+        <div class="calculation">
+          労働日数 = 31日 - 4日 = 27日<br>
+          1日平均勤務時間 = 177時間 ÷ 27日 = 約6.56時間
+        </div>
+        <p><strong>勤務パターン例:</strong> 6日勤務＋1日公休を4回繰り返し、残り3日は勤務日</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数27日</span> / <span class="holiday">公休日数4日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（31日・最小公休）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：27日 / 公休日数：4日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">2</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">4</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">5</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">6</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">9</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">10</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">11</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">12</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">13</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">14</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">17</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">19</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">20</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">26</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">27</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>6.5h</div>
+          </div>
+
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">29</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">30</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">31</div>
+            <div>6.5h</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：177時間（6.5h×26日 + 8h×1日）<br>
+          6連勤×4回 + 残り3日勤務
+        </div>
+      </div>
+    </div>
+
+    <h4>🟢 パターン2：公休日数を最大にするケース</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box max-pattern pattern-content">
+        <p><strong>目的:</strong> 1日10時間勤務を最大限活用し、労働日数を最小化</p>
+        <div class="calculation">
+          必要労働日数 = 177時間 ÷ 10時間/日 = 17.7日 → 18日（切り上げ）<br>
+          公休日数 = 31日 - 18日 = 13日
+        </div>
+        <p><strong>勤務設定例:</strong> 10時間勤務17日 + 7時間勤務1日 = 177時間</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数18日</span> / <span class="holiday">公休日数13日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（31日・最大公休）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：18日 / 公休日数：13日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">2</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">4</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">5</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">6</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>10h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">9</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">10</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">11</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">12</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">13</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">14</div>
+            <div>公休</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">17</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">19</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">20</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>10h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">26</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">27</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>7h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">29</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">30</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">31</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：177時間（10h×17日 + 7h×1日）<br>
+          集中勤務で公休日数を最大化
+        </div>
+      </div>
+    </div>
+
+    <h4>🟡 パターン3：ミックスパターン</h4>
+    <div class="pattern-flex">
+      <div class="highlight-box mix-pattern pattern-content">
+        <p><strong>目的:</strong> 様々な勤務時間を組み合わせた現実的な運用</p>
+        <div class="calculation">労働日数20日での1日平均 = 177時間 ÷ 20日 = 8.85時間</div>
+        <p><strong>勤務設定例:</strong> 10時間勤務6日 + 9時間勤務6日 + 8時間勤務7日 + 7時間勤務1日 = 177時間</p>
+        <p>
+          <strong>結果:</strong> <span class="work-day">労働日数20日</span> / <span class="holiday">公休日数11日</span>
+        </p>
+      </div>
+      <div class="calendar-container">
+        <p style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #2c3e50">
+          シフトカレンダー例（31日・ミックス）
+        </p>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 14px">
+          <strong>労働日数：20日 / 公休日数：11日</strong>
+        </p>
+        <div class="calendar-grid">
+          <div class="calendar-header">日</div>
+          <div class="calendar-header">月</div>
+          <div class="calendar-header">火</div>
+          <div class="calendar-header">水</div>
+          <div class="calendar-header">木</div>
+          <div class="calendar-header">金</div>
+          <div class="calendar-header">土</div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">1</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">2</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">3</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">4</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">5</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">6</div>
+            <div>7h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">7</div>
+            <div>9h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">8</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">9</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">10</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">11</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">12</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">13</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">14</div>
+            <div>8h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">15</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">16</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">17</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">18</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">19</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">20</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">21</div>
+            <div>8h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">22</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">23</div>
+            <div>9h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">24</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">25</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">26</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">27</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">28</div>
+            <div>9h</div>
+          </div>
+
+          <div class="calendar-day calendar-holiday">
+            <div style="font-weight: bold">29</div>
+            <div>公休</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">30</div>
+            <div>8h</div>
+          </div>
+          <div class="calendar-day calendar-work">
+            <div style="font-weight: bold">31</div>
+            <div>10h</div>
+          </div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+          <div class="calendar-day calendar-empty"></div>
+        </div>
+        <div class="calendar-summary">
+          合計労働時間：177時間（10h×6日 + 9h×6日 + 8h×7日 + 7h×1日）<br>
+          現実的な運用パターン
+        </div>
+      </div>
+    </div>
+
+    <h2>📈 シミュレーション結果比較表</h2>
+
+    <table class="summary-table">
+      <tbody><tr>
+        <th><span style="font-size: 12px">月の暦日数</span></th>
+        <th><span style="font-size: 12px">月の所定労働時間</span></th>
+        <th>
+          <span style="font-size: 12px">公休日数の最小</span><br><span style="font-size: 12px">（最低週1日公休遵守）</span>
+        </th>
+        <th>
+          <span style="font-size: 12px">公休日数の最大</span><br><span style="font-size: 12px">（1日10時間勤務活用）</span>
+        </th>
+        <th>
+          <span style="font-size: 12px">ミックスパターン</span><br><span style="font-size: 12px">での公休日数（例）</span>
+        </th>
+      </tr>
+      <tr>
+        <td>
+          <strong><span style="font-size: 16px">30日</span></strong>
+        </td>
+        <td>
+          <strong><span style="font-size: 16px">171時間</span></strong>
+        </td>
+        <td class="min-pattern">
+          <strong><span style="font-size: 16px">4日</span></strong><br><span style="font-size: 16px">(労働日数26日)</span>
+        </td>
+        <td class="max-pattern">
+          <strong><span style="font-size: 16px">12日</span></strong><br><span style="font-size: 16px">(労働日数18日)</span>
+        </td>
+        <td class="mix-pattern">
+          <strong><span style="font-size: 16px">10日</span></strong><br><span style="font-size: 16px">(労働日数20日)</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <strong><span style="font-size: 16px">31日</span></strong>
+        </td>
+        <td>
+          <strong><span style="font-size: 16px">177時間</span></strong>
+        </td>
+        <td class="min-pattern">
+          <strong><span style="font-size: 16px">4日</span></strong><br><span style="font-size: 16px">(労働日数27日)</span>
+        </td>
+        <td class="max-pattern">
+          <strong><span style="font-size: 16px">13日</span></strong><br><span style="font-size: 16px">(労働日数18日)</span>
+        </td>
+        <td class="mix-pattern">
+          <strong><span style="font-size: 16px">11日</span></strong><br><span style="font-size: 16px">(労働日数20日)</span>
+        </td>
+      </tr>
+    </tbody></table>
+
+    <h2>🔧 実務での活用方法</h2>
+
+    <div class="highlight-box">
+      <h3>シフト作成時の考慮事項</h3>
+      <ul>
+        <li>
+          <strong><span style="font-size: 16px">業務の繁閑期対応:</span></strong><span style="font-size: 16px"> 繁忙期は長時間勤務を活用し、閑散期は短時間勤務でバランス調整</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">従業員の希望:</span></strong><span style="font-size: 16px"> 個々の従業員のワークライフバランス要望を考慮</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">法的制約の遵守:</span></strong><span style="font-size: 16px"> 6連勤上限と週1日公休の厳格な遵守</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">柔軟な運用:</span></strong><span style="font-size: 16px"> 上記範囲内での柔軟なカレンダー調整</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="rule-box">
+      <h3>運用上の注意点</h3>
+      <ul>
+        <li><span style="font-size: 16px">月初にシミュレーション結果を基に基本シフトを作成</span></li>
+        <li><span style="font-size: 16px">週単位での労働時間バランスの確認</span></li>
+        <li><span style="font-size: 16px">連続勤務日数の継続的なモニタリング</span></li>
+        <li><span style="font-size: 16px">従業員の健康管理と労働負荷の適切な配分</span></li>
+      </ul>
+    </div>
+
+    <div class="highlight-box">
+      <h3>🔍 具体的な勤務時間設定ルール</h3>
+      <ul>
+        <li>
+          <strong><span style="font-size: 16px">日曜日出勤時の取扱い:</span></strong><span style="font-size: 16px">
+            日曜日（法定休日）出勤の場合は振替休日を取得するため、日曜日の労働時間は8時間に固定設定</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">有給休暇の労働時間計算:</span></strong><span style="font-size: 16px">
+            有給取得日は8時間分働いたとみなし、出勤簿に8時間と入力（半日有給の場合は4時間）</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">10時間勤務時の始業時刻:</span></strong><span style="font-size: 16px">
+            10時間勤務を設定する場合は、深夜時間帯（22時以降）に被らないよう11時までに始業すること</span>
+        </li>
+      </ul>
+
+      <div class="calculation">
+        例：10時間勤務の場合<br>
+        始業11:00 → 終業22:00（休憩1時間込み）<br>
+        ※深夜時間帯（22:00～5:00）を避けて設定
+      </div>
+    </div>
+
+    <h2>📝 まとめと提言</h2>
+
+    <div class="highlight-box">
+      <h3>制度導入の効果</h3>
+      <ul>
+        <li>
+          <strong><span style="font-size: 16px">柔軟性の向上:</span></strong><span style="font-size: 16px"> 公休日数を4〜12日（30日の月）、4〜13日（31日の月）の範囲で調整可能</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">労働基準法の遵守:</span></strong><span style="font-size: 16px"> 週休制の原則と連続勤務制限を満たした運用</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">業務効率の最適化:</span></strong><span style="font-size: 16px"> 業務量に応じた勤務時間調整により、効率的な人材活用が実現</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">ワークライフバランス:</span></strong><span style="font-size: 16px"> 従業員のニーズに応じた多様な働き方の提供</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="highlight-box">
+      <h3>🎯 推奨される実践手順</h3>
+      <ol>
+        <li>
+          <strong><span style="font-size: 16px">月初計画:</span></strong><span style="font-size: 16px"> 業務予測に基づく基本シフト骨格の作成</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">柔軟調整:</span></strong><span style="font-size: 16px"> 実際の業務量や従業員希望に応じた微調整</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">継続監視:</span></strong><span style="font-size: 16px"> 労働時間の適正性と従業員満足度の定期確認</span>
+        </li>
+        <li>
+          <strong><span style="font-size: 16px">制度改善:</span></strong><span style="font-size: 16px"> 運用実績に基づく制度の継続的改善</span>
+        </li>
+      </ol>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #bdc3c7; color: #7f8c8d">
+      <p>
+        <em><span style="font-size: 16px">労働基準法を遵守し、従業員の働きやすさと業務効率の両立を図る制度運用を推進いたします。</span></em>
+      </p>
+    </footer>
+  
+
+</body></html>
